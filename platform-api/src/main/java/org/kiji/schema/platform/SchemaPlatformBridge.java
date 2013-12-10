@@ -16,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.kiji.schema.platform;
 
 import java.io.IOException;
@@ -184,5 +183,5 @@ public abstract class SchemaPlatformBridge {
     mBridge = Lookups.getPriority(SchemaPlatformBridgeFactory.class).lookup().getBridge();
     return mBridge;
   }
-}
 
+}

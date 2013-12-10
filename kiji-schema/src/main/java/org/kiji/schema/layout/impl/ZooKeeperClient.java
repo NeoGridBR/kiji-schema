@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -330,9 +332,10 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
       CreateMode createMode)
       throws KeeperException {
 
+    final String unixPath = unixPath(path);
     while (true) {
       try {
-        return new File(getZKClient().create(path.toString(), data, acl, createMode));
+        return new File(getZKClient().create(unixPath, data, acl, createMode));
       } catch (InterruptedException ie) {
         throw new RuntimeInterruptedException(ie);
       } catch (ConnectionLossException ke) {
@@ -344,7 +347,7 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
       }
       Time.sleep(ZOOKEEPER_RETRY_DELAY);
       LOG.debug("Retrying create({}, {}, {}, {}).",
-          path, Bytes.toStringBinary(data), acl, createMode);
+          unixPath, Bytes.toStringBinary(data), acl, createMode);
     }
   }
 
@@ -357,9 +360,11 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
    *     Connection related errors are handled by retrying the operations.
    */
   public Stat exists(File path) throws KeeperException {
+    final String unixPath = unixPath(path);
+
     while (true) {
       try {
-        return getZKClient().exists(path.toString(), false);
+        return getZKClient().exists(unixPath, false);
       } catch (InterruptedException ie) {
         throw new RuntimeInterruptedException(ie);
       } catch (ConnectionLossException ke) {
@@ -370,7 +375,7 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
         LOG.debug("ZooKeeper session moved.", sme);
       }
       Time.sleep(ZOOKEEPER_RETRY_DELAY);
-      LOG.debug("Retrying exists({}).", path);
+      LOG.debug("Retrying exists({}).", unixPath);
     }
   }
 
@@ -385,9 +390,11 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
    *     Connection related errors are handled by retrying the operations.
    */
   public Stat exists(File path, Watcher watcher) throws KeeperException {
+    final String unixPath = unixPath(path);
+
     while (true) {
       try {
-        return getZKClient().exists(path.toString(), watcher);
+        return getZKClient().exists(unixPath, watcher);
       } catch (InterruptedException ie) {
         throw new RuntimeInterruptedException(ie);
       } catch (ConnectionLossException ke) {
@@ -398,7 +405,7 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
         LOG.debug("ZooKeeper session moved.", sme);
       }
       Time.sleep(ZOOKEEPER_RETRY_DELAY);
-      LOG.debug("Retrying exists({}).", path);
+      LOG.debug("Retrying exists({}).", unixPath);
     }
   }
 
@@ -415,9 +422,11 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
    */
   public byte[] getData(File path, Watcher watcher, Stat stat)
       throws KeeperException {
+    final String unixPath = unixPath(path);
+
     while (true) {
       try {
-        return getZKClient().getData(path.toString(), watcher, stat);
+        return getZKClient().getData(unixPath, watcher, stat);
       } catch (InterruptedException ie) {
         throw new RuntimeInterruptedException(ie);
       } catch (ConnectionLossException ke) {
@@ -428,7 +437,7 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
         LOG.debug("ZooKeeper session moved.", sme);
       }
       Time.sleep(ZOOKEEPER_RETRY_DELAY);
-      LOG.debug("Retrying getData({}).", path);
+      LOG.debug("Retrying getData({}).", unixPath);
     }
   }
 
@@ -443,14 +452,16 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
    *     Connection related errors are handled by retrying the operations.
    */
   public Stat setData(File path, byte[] data, int version) throws KeeperException {
+    final String unixPath = unixPath(path);
+
     while (true) {
       try {
-        return getZKClient().setData(path.toString(), data, version);
+        return getZKClient().setData(unixPath, data, version);
       } catch (InterruptedException ie) {
         throw new RuntimeInterruptedException(ie);
       } catch (ConnectionLossException ke) {
         LOG.debug("ZooKeeper connection lost.", ke);
-        LOG.debug("Retrying setData({}, {}, {}).", path, Bytes.toStringBinary(data), version);
+        LOG.debug("Retrying setData({}, {}, {}).", unixPath, Bytes.toStringBinary(data), version);
       } catch (SessionExpiredException see) {
         LOG.debug("ZooKeeper session expired.", see);
       } catch (SessionMovedException sme) {
@@ -472,9 +483,11 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
    */
   public List<String> getChildren(File path, Watcher watcher, Stat stat)
       throws KeeperException {
+    final String unixPath = unixPath(path);
+
     while (true) {
       try {
-        return getZKClient().getChildren(path.toString(), watcher, stat);
+        return getZKClient().getChildren(unixPath, watcher, stat);
       } catch (InterruptedException ie) {
         throw new RuntimeInterruptedException(ie);
       } catch (ConnectionLossException ke) {
@@ -485,7 +498,7 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
         LOG.debug("ZooKeeper session moved.", sme);
       }
       Time.sleep(ZOOKEEPER_RETRY_DELAY);
-      LOG.debug("Retrying getChildren({}).", path);
+      LOG.debug("Retrying getChildren({}).", unixPath);
     }
   }
 
@@ -498,9 +511,11 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
    *     Connection related errors are handled by retrying the operations.
    */
   public void delete(File path, int version) throws KeeperException {
+    final String unixPath = unixPath(path);
+
     while (true) {
       try {
-        getZKClient().delete(path.toString(), version);
+        getZKClient().delete(unixPath, version);
         return;
       } catch (InterruptedException ie) {
         throw new RuntimeInterruptedException(ie);
@@ -512,7 +527,7 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
         LOG.debug("ZooKeeper session moved.", sme);
       }
       Time.sleep(ZOOKEEPER_RETRY_DELAY);
-      LOG.debug("Retrying delete({}, {}).", path, version);
+      LOG.debug("Retrying delete({}, {}).", unixPath, version);
     }
   }
 
@@ -524,12 +539,13 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
    */
   public void createNodeRecursively(File path)
       throws KeeperException {
+    final String unixPath = unixPath(path);
 
     if (exists(path) != null) {
       return;
     }
 
-    if (path.getPath().equals("/")) {
+    if (unixPath.equals("/")) {
       // No need to create the root node "/" :
       return;
     }
@@ -539,13 +555,14 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
     }
     while (true) {
       try {
-        LOG.debug("Creating ZooKeeper node: {}", path);
+        LOG.debug("Creating ZooKeeper node: {}", unixPath);
         final File createdPath =
             this.create(path, EMPTY_BYTES, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        Preconditions.checkState(createdPath.equals(path));
+        final String createdPathString = unixPath(createdPath);
+        Preconditions.checkState(createdPathString.equals(unixPath));
         return;
       } catch (NodeExistsException exn) {
-        LOG.debug("ZooKeeper node already exists: {}", path);
+        LOG.debug("ZooKeeper node already exists: {}", unixPath);
         return;
       }
     }
@@ -574,5 +591,14 @@ public class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient> {
       close();
     }
     super.finalize();
+  }
+
+  /**
+   * Returns a path string in Unix format (slash as path separator).
+   * @param path File instance to convert.
+   * @return String representing file path as in Unix.
+   */
+  private static String unixPath(File path) {
+    return FilenameUtils.separatorsToUnix(path.toString());
   }
 }

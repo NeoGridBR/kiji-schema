@@ -67,6 +67,7 @@ public class TestCreateTableTool extends KijiToolTest {
   public void testCreateHashedTableWithNumRegions() throws Exception {
     final KijiTableLayout layout = KijiTableLayouts.getTableLayout(KijiTableLayouts.FOO_TEST);
     final File layoutFile = getTempLayoutFile(layout);
+
     final KijiURI tableURI =
         KijiURI.newBuilder(getKiji().getURI()).withTableName(layout.getName()).build();
 
@@ -86,6 +87,7 @@ public class TestCreateTableTool extends KijiToolTest {
     final KijiTableLayout layout =
         KijiTableLayout.newLayout(KijiTableLayouts.getFooUnhashedTestLayout());
     final File layoutFile = getTempLayoutFile(layout);
+
     final KijiURI tableURI =
         KijiURI.newBuilder(getKiji().getURI()).withTableName(layout.getName()).build();
 
@@ -95,7 +97,7 @@ public class TestCreateTableTool extends KijiToolTest {
     assertEquals(BaseTool.SUCCESS, runTool(new CreateTableTool(),
       "--table=" + tableURI,
       "--layout=" + layoutFile,
-      "--split-key-file=file://" + splitKeyFile,
+      "--split-key-file=" + splitKeyFile,
       "--debug"
     ));
     assertEquals(2, mToolOutputLines.length);
@@ -118,7 +120,7 @@ public class TestCreateTableTool extends KijiToolTest {
       runTool(new CreateTableTool(),
         "--table=" + tableURI,
         "--layout=" + layoutFile,
-        "--split-key-file=file://" + splitKeyFile
+        "--split-key-file=" + splitKeyFile
       );
       fail("Should throw IllegalArgumentException");
     } catch (IllegalArgumentException iae) {

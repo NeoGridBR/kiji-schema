@@ -113,12 +113,18 @@ public class KijiClientTest {
     }
   }
 
+  /**
+   * Initializes the in-memory kiji for testing.
+   *
+   * @throws Exception on error.
+   */
   private void doSetupKijiTest() throws Exception {
     mTestId =
         String.format("%s_%s", getClass().getName().replace('.', '_'), mTestName.getMethodName());
     mLocalTempDir = TestingFileUtils.createTempDir(mTestId, "temp-dir");
     mConf = HBaseConfiguration.create();
-    mConf.set("fs.defaultFS", "file://" + mLocalTempDir);
+    mConf.set("fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem");
+    mConf.set("fs.defaultFS", mLocalTempDir.getAbsolutePath());
     mConf.set("mapred.job.tracker", "local");
     mKiji = null;  // lazily initialized
     // Disable logging of commands to the upgrade server by accident.
@@ -186,7 +192,11 @@ public class KijiClientTest {
     mKijis = null;
     mKiji = null;
     mConf = null;
-    FileUtils.deleteDirectory(mLocalTempDir);
+    try {
+       FileUtils.deleteDirectory(mLocalTempDir);
+    } catch (IOException ioe) {
+      LOG.warn("Unable to delete directyory {}.", mLocalTempDir);
+    }
     mLocalTempDir = null;
     mTestId = null;
 
