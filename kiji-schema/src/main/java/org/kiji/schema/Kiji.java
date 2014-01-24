@@ -105,7 +105,7 @@ public interface Kiji extends KijiTableFactory, ReferenceCountable<Kiji> {
       synchronized (Kiji.Factory.class) {
         if (null == mInstance) {
           mInstance = Lookups.getPriority(KijiFactory.class).lookup();
-        } 
+        }
         if (null == mInstance) {
           mInstance = new HBaseKijiFactory();
         }
