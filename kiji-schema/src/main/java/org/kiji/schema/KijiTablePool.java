@@ -393,7 +393,7 @@ public final class KijiTablePool implements Closeable {
             + " are " + mPoolSize + " tables in the pool.");
         }
         LOG.debug("Cache miss for table {}", mTableName);
-        KijiTable tableConnection = new PooledKijiTable(mTableFactory.openTable(mTableName), this);
+        availableConnection = new PooledKijiTable(mTableFactory.openTable(mTableName), this);
         mPoolSize++;
         if (mPoolSize < mMinSize) {
           LOG.debug("Below the min pool size for table {}. Adding to the pool.", mTableName);
@@ -402,9 +402,9 @@ public final class KijiTablePool implements Closeable {
             mPoolSize++;
           }
         }
-        return tableConnection;
+      } else {
+        LOG.debug("Cache hit for table {}", mTableName);
       }
-      LOG.debug("Cache hit for table {}", mTableName);
       final int counter = availableConnection.mRetainCount.incrementAndGet();
       // TODO(SCHEMA-246): Instead of failing here, open a new connection and return it.
       Preconditions.checkState(counter == 1,
@@ -477,7 +477,7 @@ public final class KijiTablePool implements Closeable {
     private Pool mPool;
 
     /** Internal retention count for wrapped pool connections. */
-    private AtomicInteger mRetainCount = new AtomicInteger(1);
+    private AtomicInteger mRetainCount = new AtomicInteger(0);
 
     /**
      * Constructor.
