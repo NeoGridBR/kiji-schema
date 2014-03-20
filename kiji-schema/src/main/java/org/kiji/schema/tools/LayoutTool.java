@@ -19,6 +19,7 @@
 
 package org.kiji.schema.tools;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,9 @@ import java.util.Map;
 import java.util.NavigableMap;
 
 import com.google.common.base.Preconditions;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -162,16 +166,11 @@ public final class LayoutTool extends BaseTool {
    * @throws Exception on error.
    */
   private TableLayoutDesc loadJsonTableLayoutDesc(String filePath) throws Exception {
-    final Path path = new Path(filePath);
-    final FileSystem fs = fileSystemSpecified(path)
-        ? path.getFileSystem(getConf())
-        : FileSystem.getLocal(getConf());
-    final InputStream istream = fs.open(path);
+    final InputStream istream = openInputStream(filePath);
     try {
       return KijiTableLayout.readTableLayoutDescFromJSON(istream);
     } finally {
       ResourceUtils.closeOrLog(istream);
-      ResourceUtils.closeOrLog(fs);
     }
   }
 
@@ -256,14 +255,39 @@ public final class LayoutTool extends BaseTool {
   }
 
   /**
+   * Open a new InputStream to read from file.
+   * @param filePath file path to open.
+   * @return A new, opened InputStream.
+   * @throws IOException if something goes wrong while opening file.
+   */
+  private InputStream openInputStream(String filePath) throws IOException {
+    final Path path = new Path(filePath);
+    final Configuration conf = getConf();
+
+    if (!fileSystemSpecified(path)) {
+      return new FileInputStream(filePath);
+    } else {
+      FileSystem fs = null;
+      try {
+        fs = fileSystemSpecified(path) ? path.getFileSystem(conf) : FileSystem.getLocal(conf);
+        final FSDataInputStream inputStream = fs.open(path);
+        return inputStream;
+      } finally {
+        ResourceUtils.closeOrLog(fs);
+      }
+    }
+  }
+
+  /**
    * Determines whether a path has its filesystem explicitly specified.  Did it start
    * with "hdfs://" or "file://"?
    *
    * @param path The path to check.
    * @return Whether a file system was explicitly specified in the path.
    */
-  protected static boolean fileSystemSpecified(Path path) {
-    return null != path.toUri().getScheme();
+  private static boolean fileSystemSpecified(Path path) {
+    final String scheme = path.toUri().getScheme();
+    return null != scheme;
   }
 
   /**

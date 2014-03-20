@@ -31,6 +31,7 @@ import org.kiji.annotations.Inheritance;
 import org.kiji.delegation.Lookups;
 import org.kiji.delegation.PriorityProvider;
 import org.kiji.schema.KijiURI;
+import org.kiji.schema.impl.DefaultHBaseFactory;
 import org.kiji.schema.impl.HBaseAdminFactory;
 import org.kiji.schema.impl.HTableInterfaceFactory;
 import org.kiji.schema.layout.impl.ZooKeeperClient;
@@ -59,6 +60,10 @@ public interface HBaseFactory extends PriorityProvider {
         if (null == mInstance) {
           mInstance = Lookups.getPriority(HBaseFactory.class).lookup();
         }
+        if (null == mInstance) {
+          mInstance = new DefaultHBaseFactory();
+        }
+
         return mInstance;
       }
     }

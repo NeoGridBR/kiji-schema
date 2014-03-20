@@ -20,6 +20,8 @@
 package org.kiji.schema.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -35,4 +37,13 @@ public class TestJvmId {
     assertEquals(jvmId, JvmId.get());
   }
 
+  @Test
+  public void evaluateIdComponents() {
+    final String jvmId = JvmId.get();
+    final String[] components = jvmId.split("@");
+    assertEquals("Expected 3 components separated by @", 3, components.length);
+    assertTrue("Expected a number at JvmId's first pos (pid)", components[0].matches("\\d+"));
+    assertFalse("2nd position cannot be empty (hostname)", "".equals(components[1]));
+    assertTrue("Expected a number at JvmId's 3rd pos (timestamp)", components[2].matches("\\d+"));
+  }
 }

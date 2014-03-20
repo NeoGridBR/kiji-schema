@@ -30,6 +30,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import org.apache.commons.io.FilenameUtils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -177,7 +178,8 @@ public final class KijiURI {
     mZookeeperQuorumNormalized = ImmutableSortedSet.copyOf(mZookeeperQuorum).asList();
     mZookeeperClientPort = parser.getZookeeperClientPort();
 
-    final String[] path = new File(uri.getPath()).toString().split("/");
+    final String uriPath = uriPath(uri);
+    final String[] path = uriPath.split("/");
     if (path.length > 4) {
       throw new KijiURIException(uri.toString(),
           "Invalid path, expecting '/kiji-instance/table-name/(column1, column2, ...)'");
@@ -749,5 +751,16 @@ public final class KijiURI {
     } catch (URISyntaxException e) {
       throw new KijiURIException(e.getMessage());
     }
+  }
+
+  /**
+   * (Adjusts and) convert a URI to its String representantion.
+   * @param uri Kiji URI
+   * @return the String representation for uri
+   */
+  private static String uriPath(URI uri) {
+    final File uriPath = new File(uri.getPath().replaceAll("/+", "/"));
+    final String unixPath = FilenameUtils.separatorsToUnix(uriPath.toString());
+    return unixPath;
   }
 }
