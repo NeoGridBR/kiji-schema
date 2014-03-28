@@ -620,6 +620,7 @@ public final class KijiTablePool implements Closeable {
     /** Default constructor. */
     public IdleTimeoutThread() {
       setDaemon(true); // This thread should not block system exit.
+      setName("kiji-idle-timeout");
     }
 
     /** {@inheritDoc} */

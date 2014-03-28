@@ -22,12 +22,12 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.avro.util.WeakIdentityHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.kiji.annotations.ApiAudience;
 import org.kiji.annotations.ApiStability;
 import org.kiji.schema.InternalKijiError;
@@ -132,14 +132,16 @@ public final class DebugResourceTracker {
         mResources = null;
         mCounter = new AtomicInteger(0);
         LOG.debug("Registering hook to log number of unclosed resources at shutdown.");
-        Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+        Thread hook = new Thread(new ShutdownHook(), "kiji-shutdownhook-counter");
+        Runtime.getRuntime().addShutdownHook(hook);
         break;
       }
       case REFERENCES: {
         mResources = Collections.synchronizedMap(new WeakIdentityHashMap<Object, String>());
         mCounter = new AtomicInteger(0);
         LOG.debug("Registering hook to log details of unclosed resources at shutdown.");
-        Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+        Thread hook = new Thread(new ShutdownHook(), "kiji-shutdownhook-references");
+        Runtime.getRuntime().addShutdownHook(hook);
         break;
       }
       default: throw new InternalKijiError(String.format(
@@ -148,7 +150,7 @@ public final class DebugResourceTracker {
   }
 
   /** Runs at JVM shutdown and logs warnings for open resources. */
-  private final class ShutdownHook extends Thread {
+  private final class ShutdownHook implements Runnable {
     /** {@inheritDoc} */
     @Override
     public void run() {
