@@ -134,10 +134,10 @@ public final class ZooKeeperMonitor implements Closeable {
 
   /** Factory para acompanharmos a criação de threads de monitoramento. */
   private static final ThreadFactory MONITORING_THREADS
-                            = new ThreadFactoryBuilder().setNameFormat("kiji-zkmonitor-%d").build();
+      = new ThreadFactoryBuilder().setNameFormat("kiji-zkmonitor-%d").build();
 
   private static final ThreadFactory WATCHER_THREADS
-                            = new ThreadFactoryBuilder().setNameFormat("kiji-zkwatcher-%d").build();
+      = new ThreadFactoryBuilder().setNameFormat("kiji-zkwatcher-%d").build();
   // -----------------------------------------------------------------------------------------------
 
   /**
