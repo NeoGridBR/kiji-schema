@@ -21,8 +21,10 @@ package org.kiji.schema.layout.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -42,7 +44,6 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,6 +102,22 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
       } else {
         return existingClient.retain();
       }
+    }
+  }
+
+  /**
+   * Drop remaining instances from ZOOKEEPER_CACHE.
+   */
+  public static void cleanCache() {
+    final Set<ZooKeeperClient> cachedClients;
+    synchronized (CACHE_MONITOR) {
+      cachedClients = new HashSet<ZooKeeperClient>(ZOOKEEPER_CACHE.values());
+    }
+    for (ZooKeeperClient aClient : cachedClients) {
+      aClient.close();
+    }
+    synchronized (CACHE_MONITOR) {
+      ZOOKEEPER_CACHE.clear();
     }
   }
 
