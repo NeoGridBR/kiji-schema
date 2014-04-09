@@ -44,8 +44,10 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.kiji.annotations.ApiAudience;
 import org.kiji.schema.KijiIOException;
 import org.kiji.schema.RuntimeInterruptedException;
@@ -174,6 +176,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
               mZKClient.close();
             } catch (InterruptedException e) {
               LOG.warn("Interrupted exception while closing expired session.", e);
+              Thread.currentThread().interrupt();
             }
             createZKClient();
           } else {
