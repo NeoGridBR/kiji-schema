@@ -99,7 +99,7 @@ public final class KijiColumnName implements Comparable<KijiColumnName> {
    * @return the full name of the column.
    */
   public String getName() {
-    return (mQualifier == null ? mFamily : String.format("%s:%s", mFamily, mQualifier));
+    return (mQualifier == null ? mFamily : mFamily.concat(":").concat(mQualifier));
   }
 
   /**
