@@ -126,7 +126,7 @@ public final class ColumnNameTranslator {
     // Map type family.
     assert kijiFamily.isMapType();
     final KijiColumnName result = new KijiColumnName(kijiFamily.getDesc().getName(), parts[1]);
-    LOG.debug(String.format("Translated to Kiji map column '%s'.", result));
+    LOG.debug("Translated to Kiji map column '".concat(result.getName()).concat("'."));
     return result;
   }
 

@@ -1385,7 +1385,7 @@ public final class KijiTableLayout {
 
     // Group-type family:
     Preconditions.checkArgument(columnName.isFullyQualified(),
-        String.format("Cannot get CellFormat for entire group-type family: '%s'.", columnName));
+        "Cannot get CellFormat for entire group-type family: '".concat(columnName.getName()).concat("'."));
     final FamilyLayout.ColumnLayout cLayout =
         fLayout.getColumnMap().get(columnName.getQualifier());
     if (cLayout == null) {
